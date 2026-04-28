@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Maze Challenge 2024</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <header>
+        <h1>Maze Challenge 2024</h1>
+        <div id="level-selector"></div> <!-- ここにボタンが生成される -->
+    </header>
+
+    <main id="game-container"></main>
+
+    <!-- 1. データ -->
+    <script src="data/maps.js"></script>
+    <!-- 2. 運営側ロジック -->
+    <script src="core/engine.js"></script>
+    <script src="core/renderer.js"></script>
+    <!-- 3. 参加者コード（問題ごとにファイルが分かれている） -->
+    <script src="student/student_code_1.js"></script>
+    <script src="student/student_code_2.js"></script>
+    <script src="student/student_code_3.js"></script>
+</body>
+
+</html>
