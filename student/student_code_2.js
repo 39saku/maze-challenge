@@ -1,6 +1,6 @@
 // noprotect
-async function solveProblem1() {
+async function solveProblem2() {
     // ここにコードを書く
     await move("right");
-    await move("down");
+    await move("right");
 }

@@ -1,44 +1,71 @@
-// --- グローバル状態 ---
 let currentLevel = 1;
 let maze = [];
 let visitCount = [];
 let player = {};
 let isRunning = false;
 let finishTime = null;
-let startTime;
+let startTime = null;
 let message = "";
+let nickname = "";
 
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+const SERVER_URL = "http://localhost:3000/score";
+
+window.onload = () => {
+    const saved = localStorage.getItem('maze_nickname');
+    if (saved) {
+        nickname = saved;
+        document.getElementById('display-name').innerText = nickname;
+        document.getElementById('name-modal').style.display = 'none';
+    }
+};
+
+function saveNickname() {
+    const val = document.getElementById('nickname-input').value.trim();
+    if (!val) return alert("名前を入力してね");
+    nickname = val;
+    localStorage.setItem('maze_nickname', nickname);
+    document.getElementById('display-name').innerText = nickname;
+    document.getElementById('name-modal').style.display = 'none';
+}
 
 function loadLevel(n) {
     isRunning = false;
     let data = ALL_MAPS.find(m => m.id === n);
     if (!data) return;
-
     currentLevel = n;
     maze = data.grid.map(row => [...row]);
     visitCount = maze.map(row => row.map(() => 0));
-    player = {
-        x: data.start.x, y: data.start.y,
-        steps: 0, coins: 0,
-        totalCoins: data.coins,
-        dashDist: data.dashDist,
-        isFrozen: false
-    };
+    player = { x: data.start.x, y: data.start.y, steps: 0, coins: 0, totalCoins: data.coins, dashDist: data.dashDist, isFrozen: false };
     visitCount[player.y][player.x] = 1;
     finishTime = null;
+    startTime = null; // リセット時は開始時間もクリア
     message = `${data.name} をロードしました`;
 }
 
-// 参加者が使う関数
+function getStudentCode(n) {
+    try { return window[`solveProblem${n}`].toString(); }
+    catch (e) { return "Code not found"; }
+}
+
+async function submitScore() {
+    const data = { nickname, level: currentLevel, steps: player.steps, time: finishTime, code: getStudentCode(currentLevel) };
+    try {
+        await fetch(SERVER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        message = "スコア送信完了！";
+    } catch (e) { message = "ゴール！(スコア送信は失敗)"; }
+}
+
 async function move(dir) {
-    if (!isRunning || player.isFrozen || finishTime) return false;
+    // isRunningはここではチェックしない（実行ボタン側で制御するため）
+    if (player.isFrozen || finishTime) return false;
+
     player.steps++;
     let dx = 0, dy = 0;
     if (dir === "up") dy = -1; else if (dir === "down") dy = 1;
     else if (dir === "left") dx = -1; else if (dir === "right") dx = 1;
 
-    if (maze[player.y + dy][player.x + dx] !== 1) {
+    if (maze[player.y + dy] && maze[player.y + dy][player.x + dx] !== 1) {
         player.x += dx; player.y += dy;
         visitCount[player.y][player.x]++;
         checkStatus();
@@ -48,20 +75,19 @@ async function move(dir) {
 }
 
 async function dash(dir) {
-    if (!isRunning || player.isFrozen || finishTime) return;
-    message = "DASH!!";
+    if (player.isFrozen || finishTime) return;
     let dx = 0, dy = 0;
     if (dir === "up") dy = -1; else if (dir === "down") dy = 1;
     else if (dir === "left") dx = -1; else if (dir === "right") dx = 1;
 
     for (let i = 0; i < player.dashDist; i++) {
-        if (maze[player.y + dy][player.x + dx] !== 1) {
+        if (maze[player.y + dy] && maze[player.y + dy][player.x + dx] !== 1) {
             player.x += dx; player.y += dy;
             visitCount[player.y][player.x]++;
             checkStatus();
         } else {
-            player.steps += 10; // ペナルティ
-            await freeze(3, "衝突！"); break;
+            player.steps += 10;
+            await freeze(3, "DASH衝突！"); break;
         }
     }
     player.steps++; await sleep(500);
@@ -69,23 +95,24 @@ async function dash(dir) {
 
 function checkStatus() {
     let cell = maze[player.y][player.x];
-    if (cell === 2) { player.coins++; maze[player.y][player.x] = 0; message = "コイン獲得！"; }
-    if (cell === 3) { freeze(3, "落とし穴！"); }
+    if (cell === 2) { player.coins++; maze[player.y][player.x] = 0; }
+    if (cell === 3) freeze(3, "落とし穴！");
     if (cell === 4 && player.coins === player.totalCoins) {
         finishTime = (millis() - startTime) / 1000;
-        isRunning = false; message = "CLEAR!!";
+        submitScore();
     }
 }
 
 async function freeze(sec, msg) {
     player.isFrozen = true; message = msg;
     await sleep(sec * 1000);
-    player.isFrozen = false; message = "復帰しました";
+    player.isFrozen = false; message = "復帰！";
 }
 
 function look(dir) {
     let dx = 0, dy = 0;
     if (dir === "up") dy = -1; else if (dir === "down") dy = 1;
     else if (dir === "left") dx = -1; else if (dir === "right") dx = 1;
+    if (!maze[player.y + dy]) return 1;
     return maze[player.y + dy][player.x + dx];
 }
