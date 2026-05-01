@@ -11,7 +11,6 @@ let nickname = "";
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 
 // --- サーバー通信設定 ---
-// 1人でテスト時は localhost、本番は運営PCのIPアドレス
 const socket = io("http://localhost:3000");
 
 // 運営からの強制停止命令
