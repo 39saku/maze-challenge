@@ -14,19 +14,18 @@ function setup() {
     let runBtn = createButton('実行');
     runBtn.parent(selector);
     runBtn.mousePressed(async () => {
-        if (isRunning || finishTime) return; // 実行中またはゴール後は無効
+        if (isRunning || finishTime) return;
 
         isRunning = true;
         message = "実行中...";
 
-        // 初めての実行時だけタイマーを開始
         if (startTime === null) startTime = millis();
 
         if (currentLevel === 1) await solveProblem1();
         if (currentLevel === 2) await solveProblem2();
         if (currentLevel === 3) await solveProblem3();
 
-        isRunning = false; // ここでfalseにするので、再度ボタンが押せるようになる
+        isRunning = false;
         if (!finishTime) message = "停止（再実行可）";
     });
 

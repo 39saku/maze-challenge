@@ -9,7 +9,19 @@ let message = "";
 let nickname = "";
 
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
-const SERVER_URL = "http://localhost:3000/score";
+
+// --- サーバー通信設定 ---
+// 1人でテスト時は localhost、本番は運営PCのIPアドレス
+const socket = io("http://localhost:3000");
+
+// 運営からの強制停止命令
+socket.on('remote_stop', () => {
+    isRunning = false;
+    finishTime = null;
+    message = "【強制停止】運営により停止されました";
+    alert("運営によりプログラムが強制停止されました。");
+});
+// -----------------------
 
 window.onload = () => {
     const saved = localStorage.getItem('maze_nickname');
@@ -39,7 +51,7 @@ function loadLevel(n) {
     player = { x: data.start.x, y: data.start.y, steps: 0, coins: 0, totalCoins: data.coins, dashDist: data.dashDist, isFrozen: false };
     visitCount[player.y][player.x] = 1;
     finishTime = null;
-    startTime = null; // リセット時は開始時間もクリア
+    startTime = null;
     message = `${data.name} をロードしました`;
 }
 
@@ -50,21 +62,16 @@ function getStudentCode(n) {
 
 async function submitScore() {
     const data = { nickname, level: currentLevel, steps: player.steps, time: finishTime, code: getStudentCode(currentLevel) };
-    try {
-        await fetch(SERVER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-        message = "スコア送信完了！";
-    } catch (e) { message = "ゴール！(スコア送信は失敗)"; }
+    socket.emit('submit_score', data);
+    message = "スコアを運営に送信しました！";
 }
 
 async function move(dir) {
-    // isRunningはここではチェックしない（実行ボタン側で制御するため）
     if (player.isFrozen || finishTime) return false;
-
     player.steps++;
     let dx = 0, dy = 0;
     if (dir === "up") dy = -1; else if (dir === "down") dy = 1;
     else if (dir === "left") dx = -1; else if (dir === "right") dx = 1;
-
     if (maze[player.y + dy] && maze[player.y + dy][player.x + dx] !== 1) {
         player.x += dx; player.y += dy;
         visitCount[player.y][player.x]++;
@@ -79,7 +86,6 @@ async function dash(dir) {
     let dx = 0, dy = 0;
     if (dir === "up") dy = -1; else if (dir === "down") dy = 1;
     else if (dir === "left") dx = -1; else if (dir === "right") dx = 1;
-
     for (let i = 0; i < player.dashDist; i++) {
         if (maze[player.y + dy] && maze[player.y + dy][player.x + dx] !== 1) {
             player.x += dx; player.y += dy;
