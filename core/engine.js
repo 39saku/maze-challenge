@@ -9,18 +9,20 @@ let message = "";
 let nickname = "";
 
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
-
-// --- サーバー通信設定 ---
 const socket = io("http://localhost:3000");
 
-// 運営からの強制停止命令
+// 指定した座標の状態を確認する関数
+function look(x, y) {
+    if (!maze[y] || maze[y][x] === undefined) return 1;
+    return maze[y][x];
+}
+
 socket.on('remote_stop', () => {
     isRunning = false;
     finishTime = null;
     message = "【強制停止】運営により停止されました";
     alert("運営によりプログラムが強制停止されました。");
 });
-// -----------------------
 
 window.onload = () => {
     const saved = localStorage.getItem('maze_nickname');
@@ -75,9 +77,11 @@ async function move(dir) {
         player.x += dx; player.y += dy;
         visitCount[player.y][player.x]++;
         checkStatus();
-        await sleep(500); return true;
+        if (currentLevel < 9) await sleep(500);
+        return true;
     }
-    await sleep(500); return false;
+    if (currentLevel < 9) await sleep(500);
+    return false;
 }
 
 async function dash(dir) {
@@ -95,7 +99,8 @@ async function dash(dir) {
             await freeze(3, "DASH衝突！"); break;
         }
     }
-    player.steps++; await sleep(500);
+    player.steps++;
+    if (currentLevel < 9) await sleep(500);
 }
 
 function checkStatus() {
@@ -112,12 +117,4 @@ async function freeze(sec, msg) {
     player.isFrozen = true; message = msg;
     await sleep(sec * 1000);
     player.isFrozen = false; message = "復帰！";
-}
-
-function look(dir) {
-    let dx = 0, dy = 0;
-    if (dir === "up") dy = -1; else if (dir === "down") dy = 1;
-    else if (dir === "left") dx = -1; else if (dir === "right") dx = 1;
-    if (!maze[player.y + dy]) return 1;
-    return maze[player.y + dy][player.x + dx];
 }
