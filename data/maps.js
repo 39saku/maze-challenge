@@ -93,7 +93,7 @@ const ALL_MAPS = [
             [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 4, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         ],
-        start: { x: 1, y: 1 }, coins: 0, dashDist: 6
+        start: { x: 1, y: 1 }, coins: 0, dashDist: 3
     },
     {
         id: 7, name: "L7",

@@ -4,19 +4,24 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maze Challenge</title>
-    <!-- Socket.ioライブラリを追加 -->
+    <title>Maze Challenge 2024</title>
+
+    <!-- 1. ライブラリの読み込み -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+
+    <!-- 2. スタイルの読み込み -->
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
 <body>
     <header>
-        <h1>Maze Challenge</h1>
+        <h1>Maze Challenge 2024</h1>
         <div id="user-info">名前: <span id="display-name">---</span></div>
         <div id="level-selector"></div>
     </header>
+
+    <!-- 名前入力モーダル -->
     <div id="name-modal" class="modal">
         <div class="modal-content">
             <h2>ニックネームを入力</h2>
@@ -24,13 +29,29 @@
             <button onclick="saveNickname()">開始する</button>
         </div>
     </div>
+
+    <!-- 迷路が表示されるメインコンテナ -->
     <main id="game-container"></main>
+
+    <!-- 3. プログラムの読み込み（順番が重要です） -->
+
+    <!-- A. データとエンジン -->
     <script src="data/maps.js"></script>
     <script src="core/engine.js"></script>
     <script src="core/renderer.js"></script>
+
+    <!-- B. 参加者の解答ファイル (全10問分) -->
     <script src="student/student_code_1.js"></script>
     <script src="student/student_code_2.js"></script>
     <script src="student/student_code_3.js"></script>
+    <script src="student/student_code_4.js"></script>
+    <script src="student/student_code_5.js"></script>
+    <script src="student/student_code_6.js"></script>
+    <script src="student/student_code_7.js"></script>
+    <script src="student/student_code_8.js"></script>
+    <script src="student/student_code_9.js"></script>
+    <script src="student/student_code_10.js"></script>
+
 </body>
 
 </html>
